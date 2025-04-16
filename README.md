@@ -13,6 +13,7 @@ Este sitio está mantenido por [Luis Mita](https://luismita.com/) y el Hacklab r
   - [Arma uno](#arma-uno)
   - [Clases](#clases)
   - [Versiones](#versiones)
+  - [Accesorios probados](#accesorios)
   - [Cómo Contribuir](#como-contribuir)
 
 
@@ -207,7 +208,7 @@ Las clases nos ayudan a medir de forma tentativa las capacidades que tenemos.
 | Clase 4 | 1 radio 2.4G, 1 radio 5G | Mini router con 1 radio 2.4G y un radio 5G (802.11ac) | [Cudy TR1200](https://openwrt.org/toh/cudy/tr1200) |
 | Clase 5 | 1 radio 2.4G, 1 radio 5G, 1 radio 2.4G/5G 1x1 | Mini router de Clase 4 con un radio adicional | [Cudy TR1200](https://openwrt.org/toh/cudy/tr1200) + adaptador USB dual band de 1 antena |
 | Clase 6 | 1 radio 2.4G, 1 radio 5G, 1 radio 2.4G/5G 2x2 | Mini router de Clase 4 con un radio adicional | [Cudy TR1200](https://openwrt.org/toh/cudy/tr1200) + adaptador USB dual band de dos antenas |
-| Clase 8 | 1 radio 2.4G, 1 radio 5G | Mini router Wi-Fi 6 | [Cudy TR1200](https://openwrt.org/toh/cudy/tr1200) |
+| Clase 8 | 1 radio 2.4G, 1 radio 5G | Mini router Wi-Fi 6 | [Cudy TR3000](https://openwrt.org/toh/cudy/tr3000) |
 | Clase 9 | 1 radio 2.4G, 1 radio 5G, 1 radio 2.4G/5G 1x1 | Mini router Wi-Fi 6 | [Cudy TR3000](https://openwrt.org/toh/cudy/tr3000) + adaptador USB dual band de 1 antena |
 | Clase 10 | 1 radio 2.4G, 1 radio 5G, 1 radio 2.4G/5G 2x2 | Mini router Wi-Fi 6 | [Cudy TR3000](https://openwrt.org/toh/cudy/tr3000) + adaptador USB dual band de 2 antenas |
 
@@ -242,6 +243,14 @@ Capacidades de las clases:
 8. Cudy tr1200
 
 Estas versiones son producto de su tiempo, y se arman según lo que se pueda comprar o sea accesible en Bolivia.
+
+## <a name="accesorios"></a>Accesorios probados
+
+
+| Accesorio | Descripción | Instalación | Experiencia |
+| :-------- | :---------- | :---------- | :---------- |
+| TP-Link Archer T4UHP | Adaptador USB Wi-Fi 5 dual-band 2x2 | Compilar mis [drivers rtw88 para OpenWrt](https://github.com/LuisMitaHL/rtw88-openwrt) | Funcionan bien. Necesitan una batería externa con 3A o más de capacidad de corriente. En modo USB2 pierde conexión por el límite de 500mA del puerto, necesitas tenerlo en USB3. |
+| TP-Link TL-WDN4200 | Adaptador USB Wi-Fi 4 dual-band 3x3 | Instalar `kmod-rt2800-usb` | No tiene buena potencia de salida, me imagino por bugs del driver. Es grande e incómodo de manejar, por la falta de cable |
 
 ## <a name="como-contribuir"></a>Cómo Contribuir
 
