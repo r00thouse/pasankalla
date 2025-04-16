@@ -10,21 +10,198 @@ Este sitio está mantenido por [Luis Mita](https://luismita.com/) y el Hacklab r
 ## Tabla de Contenidos
 
   - [Hardware](#hardware)
+  - [Arma uno](#arma-uno)
   - [Clases](#clases)
   - [Versiones](#versiones)
+  - [Cómo Contribuir](#como-contribuir)
 
 
 ## <a name="hardware"></a>Hardware
 
 El corazón de la Pasankalla es siempre un router. Puedes comprar uno o modificar algún aparato que tengas.
 
-## <a name="clases"></a>Clases
+## <a name="arma-uno"></a>Arma uno
+
+Para empezar, necesitas un router portátil. Necesitamos que éste soporte OpenWrt.
+
+Cuando lo tengas, necesitas preparar un firmware en la siguiente web: https://firmware-selector.openwrt.org/
+En la selección de paquetes, agrega al final de lo que ya está, algo como esto:
+```
+luci-proto-wireguard
+luci-app-travelmate
+kmod-rt2800-usb
+kmod-mt76x0u
+-wpad-basic-mbedtls
+wpad-openssl
+tcpdump-mini
+ethtool
+tailscale
+iperf3
+owut
+```
+Para lo más esencial, necesitas:
+
+`luci-app-travelmate`: este programa permitirá escanear las redes cercanas a ti y conectarte a ellas.
+
+`-wpad-basic-mbedtls wpad-openssl` se encarga de instalar el soporte Wi-Fi completo: incluye cliente para redes WPA2-EAP (necesario para conectarte a la red UMSA), además de soporte para crear una red segura WPA3 para ti.
+
+`tcpdump`, dependencia del script para obtener IPs en redes cableadas (TODO).
+
+
+Opcionalmente, revisa paquetes como:
+
+`kmod-mt76x0u`, así se ven los drivers de tu adaptador Wi-Fi USB adicional (si usarás uno)
+
+`luci-proto-wireguard`, soporte de túnel VPN Wireguard si deseas usar uno.
+
+`tailscale`, soporte de túnel Tailscale.
+
+`iperf3`, para probar la velocidad del enlace de un punto a otro.
+
+`owut`, para actualizar fácilmente OpenWrt.
+
+---
+
+Listo, con el firmware compilado e instalado en el router, ya podemos empezar a [configurar Travelmate](https://openwrt.org/docs/guide-user/network/wifi/wifiextenders/travelmate) a nuestro gusto. También, luego de eso, podemos configurar [nuestra propia red](https://openwrt.org/docs/guide-quick-start/basic_wifi) para que nosotros tengamos acceso.
+
+Esta configuración se llama [AP+STA](https://openwrt.org/docs/guide-user/network/wifi/wifiextenders/ap_sta) y es muy similar a la de un repetidor.
+
+A continuación se ponen las configuraciones más especiales de la Pasankalla.
+
+### <a name="red-umsa"></a>Conectándonos a la red UMSA Wi-Fi
+
+Para que tu Pasankalla se conecte a la red UMSA por Wi-Fi, necesitas agregar esta red tal como lo harías normalmente en Travelmate. Luego debes editar los archivos de configuración de esta manera.
+
+/etc/config/network:
+```
+config interface 'trm_wwan'
+        option proto 'dhcp'
+        option metric '100'
+        option hostname '*'
+        option vendorid 'android-dhcp-10'
+```
+Esto hace que datos como el nombre del router no se propaguen públicamente al resto de clientes. Considera también usar `option peerdns '0'` y usar otro DNS por motivos de privacidad.
+
+/etc/config/wireless:
+```
+config wifi-iface 'trm_uplink5'
+        option device 'radio2'
+        option mode 'sta'
+        option ssid 'UMSA'
+        option encryption 'wpa2+ccmp'
+        option eap_type 'peap'
+        option auth 'EAP-MSCHAPV2'
+        option identity 'usuario'
+        option password 'contraseña'
+        option network 'trm_wwan'
+        option disabled '1'
+```
+Considera también usar `option macaddr 'UN:AM:AC:RA:ND:OM'` por motivos de privacidad, cambiando la MAC por otra generada aleatoriamente.
+
+Adicionalmente, si tienes problemas para iniciar sesión (un tiempo el servidor RADIUS de la UMSA solo soportaba cifrados obsoletos), prueba con estas [instrucciones para habilitar WPA2-EAP en OpenWrt con cifrados TLS obsoletos](https://forum.openwrt.org/t/wpa2-enterprise-client-802-1x-how-to-allow-weak-ssl-ciphers/229485/4?u=enmaskarado).
+
+### <a name="red-abierta"></a>Abrir una red abierta segura "Pasankalla gratis"
+Puedes crear a mano una red abierta para que los demás se conecten. Aunque puedes hacerlo por la interfaz web LuCI, podemos hacer algo mejor mediante terminal: usar WPA3-OWE.
+Con esto, la red abierta tendrá cifrado y será segura, a pesar de no tener contraseña :)
+
+La Pasankalla original tiene esta configuración:
+
+/etc/config/network
+```
+config interface 'lanclientes'
+        option proto 'static'
+        option device 'br-lan.10'
+        option ipaddr '100.102.13.37'
+        option netmask '255.255.0.0'
+```
+
+/etc/config/dhcp
+```
+config dhcp 'lanclientes'
+        option interface 'lanclientes'
+        option start '3585'
+        option limit '60000'
+        option leasetime '12h'
+        option force '1'
+```
+
+/etc/config/wireless
+```
+config wifi-iface 'wifilanpa2'
+        option device 'radio0'
+        option mode 'ap'
+        option ifname 'phy0-pa'
+        option ssid 'Pasankalla gratis'
+        option encryption 'none'
+        option network 'lanclientes'
+        option ieee80211k '1'
+        option wnm_sleep_mode '1'
+        option wnm_sleep_mode_no_keys '1'
+        option bss_transition '1'
+        option proxy_arp '1'
+        option owe_transition_ifname 'phy0-paw'
+        option disabled '1'
+
+config wifi-iface 'wifilanpa5'
+        option device 'radio1'
+        option mode 'ap'
+        option ifname 'phy1-pa'
+        option ssid 'Pasankalla gratis'
+        option encryption 'none'
+        option isolate '1'
+        option network 'lanclientes'
+        option ieee80211k '1'
+        option wnm_sleep_mode '1'
+        option wnm_sleep_mode_no_keys '1'
+        option bss_transition '1'
+        option proxy_arp '1'
+        option owe_transition_ifname 'phy1-paw'
+        option disabled '1'
+
+config wifi-iface 'wifilanpaw2'
+        option device 'radio0'
+        option mode 'ap'
+        option ifname 'phy0-paw'
+        option ssid 'Pasankalla gratis WPA3'
+        option encryption 'owe'
+        option network 'lanclientes'
+        option ieee80211k '1'
+        option wnm_sleep_mode '1'
+        option wnm_sleep_mode_no_keys '1'
+        option bss_transition '1'
+        option proxy_arp '1'
+        option disabled '1'
+        option hidden '1'
+        option owe_transition_ifname 'phy0-pa'
+
+config wifi-iface 'wifilanpaw5'
+        option device 'radio1'
+        option mode 'ap'
+        option ifname 'phy1-paw'
+        option ssid 'Pasankalla gratis WPA3'
+        option encryption 'owe'
+        option isolate '1'
+        option network 'lanclientes'
+        option ieee80211k '1'
+        option wnm_sleep_mode '1'
+        option wnm_sleep_mode_no_keys '1'
+        option bss_transition '1'
+        option proxy_arp '1'
+        option hidden '1'
+        option owe_transition_ifname 'phy1-pa'
+        option disabled '1'
+        option ocv '0'
+```
+Ojo que estas interfaces están apagadas, véase el `disabled '1'`. Yo prendo esta red mediante un slider físico, continúa leyendo.
+
+
+## <a name="clases"></a>Clases de Pasankalla
 
 Las clases nos ayudan a medir de forma tentativa las capacidades que tenemos.
 
 | Clase | Radios | Descripción | Ejemplos |
 | :---- | :----- | :---------- | :------- |
-| Clase 1 | 1 radio 2.4G/5G 1x1 | Mini router con una sola radio y una sola antena | [TP-Link TL-MR3020](https://www.tp-link.com/us/home-networking/3g-4g-router/tl-mr3020/), [Raspberry Pi Zzero W](https://www.raspberrypi.com/products/raspberry-pi-zero-w/) |
+| Clase 1 | 1 radio 2.4G/5G 1x1 | Mini router con una sola radio y una sola antena | [TP-Link TL-MR3020](https://www.tp-link.com/us/home-networking/3g-4g-router/tl-mr3020/), [Raspberry Pi Zero W](https://www.raspberrypi.com/products/raspberry-pi-zero-w/) |
 | Clase 2 | 1 radio 2.4G/5G 2x2 | Mini router con una sola radio y dos antenas | [Nexx WT3020](https://openwrt.org/toh/nexx/wt3020) |
 | Clase 3 | 2 radios Wi-Fi 4 | Mini router con dos radios Wi-Fi 4 |  |
 | Clase 4 | 1 radio 2.4G, 1 radio 5G | Mini router con 1 radio 2.4G y un radio 5G (802.11ac) | [Cudy TR1200](https://openwrt.org/toh/cudy/tr1200) |
@@ -66,3 +243,12 @@ Capacidades de las clases:
 
 Estas versiones son producto de su tiempo, y se arman según lo que se pueda comprar o sea accesible en Bolivia.
 
+## <a name="como-contribuir"></a>Cómo Contribuir
+
+Este proyecto es de libre uso. Hay varias formas de aportar a éste:
+  
+  * Mejorando las instrucciones: muchas pueden no quedar tan claras y viene bien mejorarlas.
+  * Agregando tus experiencias con el uso o el armado.
+  * Reportando el uso de distintos componentes como adaptadores Wi-Fi
+
+Eres bienvenid@ a forkear este repositorio y enviarnos un pull request :)
