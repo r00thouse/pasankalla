@@ -239,8 +239,8 @@ Capacidades de las clases:
 4. Raspberry Pi 3 con el rtl8812au
 5. Raspberry Pi 3 con el rtl8812au y un router movil
 6. Router Doméstico Confiabits
-7. Cudy tr3000
-8. Cudy tr1200
+7. Cudy TR3000
+8. Cudy TR1200
 
 Estas versiones son producto de su tiempo, y se arman según lo que se pueda comprar o sea accesible en Bolivia.
 
@@ -249,8 +249,10 @@ Estas versiones son producto de su tiempo, y se arman según lo que se pueda com
 
 | Accesorio | Descripción | Instalación | Experiencia |
 | :-------- | :---------- | :---------- | :---------- |
-| TP-Link Archer T4UHP | Adaptador USB Wi-Fi 5 dual-band 2x2 | Compilar mis [drivers rtw88 para OpenWrt](https://github.com/LuisMitaHL/rtw88-openwrt) | Funcionan bien. Necesitan una batería externa con 3A o más de capacidad de corriente. En modo USB2 pierde conexión por el límite de 500mA del puerto, necesitas tenerlo en USB3. |
-| TP-Link TL-WDN4200 | Adaptador USB Wi-Fi 4 dual-band 3x3 | Instalar `kmod-rt2800-usb` | No tiene buena potencia de salida, me imagino por bugs del driver. Es grande e incómodo de manejar, por la falta de cable |
+| TP-Link Archer T4UHP | Adaptador USB Wi-Fi 5 dual-band 2x2 | Compilar mis [drivers rtw88 para OpenWrt](https://github.com/LuisMitaHL/rtw88-openwrt) | Funcionan bien. Necesitan una batería externa con 3A o más de capacidad de corriente. En modo USB2 pierde conexión por el límite de 500mA del puerto, necesitas tenerlo en USB3. El configurador de TX power no funciona, siempre emite al máximo. |
+| TP-Link TL-WDN4200 | Adaptador USB Wi-Fi 4 dual-band 3x3 | Instalar `kmod-rt2800-usb` | No tiene buena potencia de salida, me imagino por bugs del driver. Es grande e incómodo de manejar, por la falta de cable. |
+| Cudy WU1300S | Adaptador USB Wi-Fi 5 dual-band 2x2 pequeño | Compilar mis [drivers rtw88 para OpenWrt](https://github.com/LuisMitaHL/rtw88-openwrt) | No funciona bien, se sobrecalienta y deja de funcionar. El configurador de TX power no funciona, siempre emite al máximo. |
+| Genérico | Adaptador USB Wi-Fi 5 dual-band 1x1 pequeño | Compilar mis [drivers rtw88 para OpenWrt](https://github.com/LuisMitaHL/rtw88-openwrt) | Funciona bien hasta que se sobrecalienta y deja de funcionar. Consume poco, hasta 0.14A. El configurador de TX power no funciona, siempre emite al máximo. |
 
 ## <a name="como-contribuir"></a>Cómo Contribuir
 
